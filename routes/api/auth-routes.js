@@ -4,6 +4,9 @@ import {
     ctrlRegisterUser
   } from "../../controllers/auth-controllers.js";
 
-export const authRouter = express.Router();
-//замість ctrlWrapper написана validateBody в Лямзіна
-authRouter.post("/register",ctrlWrapper(ctrlRegisterUser));
+const router = express.Router();
+router.post("/register",
+ctrlWrapper(ctrlRegisterUser)
+);
+
+export default {router};

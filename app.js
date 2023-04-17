@@ -1,8 +1,7 @@
 import express from "express";
 import logger from "morgan";
 import cors from "cors";
-// import ('dotenv').config();
-import router from "./routes/api/contacts-routes.js";
+import contactRouter from "./routes/api/contacts-routes.js";
 import authRouter from './routes/api/auth-routes.js';
 
 const app = express();
@@ -14,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth",authRouter);
-app.use("/api/contacts", router);
+app.use("/api/contacts", contactRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Something went wrong . Not found" });
