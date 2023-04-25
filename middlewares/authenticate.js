@@ -16,11 +16,11 @@ export const authenticate = async (req, res, next) => {
 
   try {
       const { id } = jwt.verify(token, SECRET_KEY);
-      console.log("tyt")
     const user = await User.findById(id);
     if (!user) {
       next(HttpError(401));
     }
+    req.user=user;
     next();
   } catch (error) {
     next(HttpError(401));
