@@ -11,8 +11,10 @@ import {
   ctrlChangeContactById,
 } from "../../controllers/contacts-controllers.js";
 
+import {authenticate} from '../../middlewares/authenticate.js';
+
 const router = express.Router();
-router.get("/", ctrlWrapper(ctrlGetAllContacts));
+router.get("/",authenticate, ctrlWrapper(ctrlGetAllContacts));
 
 router.get("/:contactId", ctrlWrapper(ctrlGetContactById));
 
