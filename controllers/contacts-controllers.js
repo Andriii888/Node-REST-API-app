@@ -2,7 +2,8 @@ import { HttpError } from "../helpers/HttpError.js";
 import { Contact, schems } from "../models/contact.js";
 
 export const ctrlGetAllContacts = async (req, res) => {
-  res.json(await Contact.find());
+  const {_id:owner}= req.user;
+  res.json(await Contact.find({owner}));
 };
 export const ctrlGetContactById = async (req, res) => {
   const { contactId } = req.params;
@@ -13,12 +14,12 @@ export const ctrlGetContactById = async (req, res) => {
   res.json(result);
 };
 export const ctrlAddContact = async (req, res) => {
-  const { error } = schems.addScheme.validate(req.body);
+    const { error } = schems.addScheme.validate(req.body);
   if (error) {
     throw HttpError(400, error.message);
   }
-  const { name, email, phone } = req.body;
-  res.status(201).json(await Contact.create(req.body));
+  const {_id:owner} = req.user;
+  res.status(201).json(await Contact.create({...req.body,owner}));
 };
 
 export const ctrlChangeContactById = async (req, res) => {
