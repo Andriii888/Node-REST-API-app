@@ -3,7 +3,9 @@ import { Contact, schems } from "../models/contact.js";
 
 export const ctrlGetAllContacts = async (req, res) => {
   const {_id:owner}= req.user;
-  res.json(await Contact.find({owner}));
+  const {page=1,limit=10}= req.query;
+  const skip = (page - 1)* limit;
+  res.json(await Contact.find({owner},"-createdAt -updatedAt",{skip,limit}).populate("owner","name email"));
 };
 export const ctrlGetContactById = async (req, res) => {
   const { contactId } = req.params;
