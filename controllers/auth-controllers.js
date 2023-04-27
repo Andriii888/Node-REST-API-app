@@ -34,3 +34,8 @@ export const ctrlLoginUser = async (req, res) => {
   const token = jwt.sign(payload,SECRET_KEY,{expiresIn:"23h"});
   res.json({ token });
 };
+
+export const ctrlGetCurrent = async (req,res)=>{
+  const {name,email}=req.user;
+  res.json({name,email})
+}
