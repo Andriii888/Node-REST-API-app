@@ -32,10 +32,17 @@ export const ctrlLoginUser = async (req, res) => {
   const payload = {id:user._id,};
 
   const token = jwt.sign(payload,SECRET_KEY,{expiresIn:"23h"});
+  await User.findByIdAndUpdate(user._id,{token});
   res.json({ token });
 };
 
 export const ctrlGetCurrent = async (req,res)=>{
   const {name,email}=req.user;
   res.json({name,email})
-}
+};
+
+export const ctrlLogOut= async (req,res)=>{
+const {_id}= req.user;
+await User.findByIdAndUpdate(_id,{token:""});
+res.json({message:"LogOut success"})
+};

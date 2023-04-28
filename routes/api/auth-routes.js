@@ -4,6 +4,7 @@ import {
     ctrlRegisterUser,
     ctrlLoginUser,
     ctrlGetCurrent,
+    ctrlLogOut,
   } from "../../controllers/auth-controllers.js";
 import {authenticate} from '../../middlewares/authenticate.js';
 
@@ -13,6 +14,7 @@ router.post("/register",
 ctrlWrapper(ctrlRegisterUser)
 );
 router.post("/login",ctrlWrapper(ctrlLoginUser));
-router.get("/current",authenticate,ctrlWrapper(ctrlGetCurrent))
+router.get("/current",authenticate,ctrlWrapper(ctrlGetCurrent));
+router.post("/logout",authenticate,ctrlWrapper(ctrlLogOut));
 
 export default router;
