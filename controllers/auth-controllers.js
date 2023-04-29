@@ -46,3 +46,11 @@ const {_id}= req.user;
 await User.findByIdAndUpdate(_id,{token:""});
 res.json({message:"LogOut success"})
 };
+
+export const ctrlSubscription = async (req,res)=>{
+  const {subscription} = req.params;
+  const {_id}= req.user;
+  console.log(req.params);
+  await User.findByIdAndUpdate(_id,{subscription});
+
+}

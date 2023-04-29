@@ -6,16 +6,18 @@ export const ctrlGetAllContacts = async (req, res) => {
   const { page = 1, limit = 10, favorite } = req.query;
   const skip = (page - 1) * limit;
   if (favorite) {
-    return res.json(await Contact.find({ owner,favorite:true}, "-createdAt -updatedAt", {
+    return res.json(
+      await Contact.find({ owner, favorite: true }, "-createdAt -updatedAt", {
+        skip,
+        limit,
+      }).populate("owner", "name email")
+    );
+  }
+  res.json(
+    await Contact.find({ owner }, "-createdAt -updatedAt", {
       skip,
       limit,
-    }).populate("owner", "name email")  
-    )
-  }
-  res.json(await Contact.find({ owner}, "-createdAt -updatedAt", {
-    skip,
-    limit,
-  }).populate("owner", "name email")  
+    }).populate("owner", "name email")
   );
 };
 export const ctrlGetContactById = async (req, res) => {
