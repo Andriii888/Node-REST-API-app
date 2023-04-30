@@ -14,7 +14,7 @@ const userSchema = new Schema(
       required: true,
     },
     token:{type:String,default:""},
-    subscription:{type:String,enum:['starter', 'pro', 'business'],default:""}
+    subscription:{type:String,enum:['starter', 'pro', 'business'],default:"",required: true}
   },
   { versionKey: false, timestamps: true }
   );
@@ -34,6 +34,10 @@ const loginScheme = Joi.object({
     password:Joi.string().min(5).required(),
 });
 
+const subscriptionScheme = Joi.object({
+  subscription: Joi.string().valid('starter', 'pro', 'business').required(),
+})
+
 export const schemes = {
-    registerScheme,loginScheme
+    registerScheme,loginScheme,subscriptionScheme
 };

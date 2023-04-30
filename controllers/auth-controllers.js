@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 
+
 dotenv.config();
 
 const { SECRET_KEY } = process.env;
@@ -48,9 +49,22 @@ res.json({message:"LogOut success"})
 };
 
 export const ctrlSubscription = async (req,res)=>{
-  const {subscription} = req.params;
+
+  const { error } = schemes.subscriptionScheme.validate(req.body);
+  if (error) {
+    throw HttpError(400, error.message);
+  }
+  const {subscription} = req.body;
   const {_id}= req.user;
-  console.log(req.params);
-  await User.findByIdAndUpdate(_id,{subscription});
+  const result =await User.findByIdAndUpdate(_id,{subscription,});
+  console.log(subscription);
+  // const { contactId } = req.params;
+  // const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+  //   new: true,
+  // });
+  if (!result) {
+    throw HttpError(404, `User with id ${_id} not found:(`);
+  }
+  res.json(result);
 
 }

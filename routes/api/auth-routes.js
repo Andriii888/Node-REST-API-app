@@ -17,6 +17,6 @@ ctrlWrapper(ctrlRegisterUser)
 router.post("/login",ctrlWrapper(ctrlLoginUser));
 router.get("/current",authenticate,ctrlWrapper(ctrlGetCurrent));
 router.post("/logout",authenticate,ctrlWrapper(ctrlLogOut));
-router.patch("/:subscription",authenticate,ctrlWrapper(ctrlSubscription))
+router.patch("/",authenticate,ctrlWrapper(ctrlSubscription))
 
 export default router;
