@@ -2,8 +2,7 @@ import { HttpError } from "../helpers/HttpError.js";
 import { User, schemes } from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
-
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -30,41 +29,35 @@ export const ctrlLoginUser = async (req, res) => {
   if (!passwordCompare) {
     throw HttpError(401, "email or password invalid");
   }
-  const payload = {id:user._id,};
+  const payload = { id: user._id };
 
-  const token = jwt.sign(payload,SECRET_KEY,{expiresIn:"23h"});
-  await User.findByIdAndUpdate(user._id,{token});
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+  await User.findByIdAndUpdate(user._id, { token });
   res.json({ token });
 };
 
-export const ctrlGetCurrent = async (req,res)=>{
-  const {name,email}=req.user;
-  res.json({name,email})
+export const ctrlGetCurrent = async (req, res) => {
+  const { name, email } = req.user;
+  res.json({ name, email });
 };
 
-export const ctrlLogOut= async (req,res)=>{
-const {_id}= req.user;
-await User.findByIdAndUpdate(_id,{token:""});
-res.json({message:"LogOut success"})
+export const ctrlLogOut = async (req, res) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+  res.json({ message: "LogOut success" });
 };
 
-export const ctrlSubscription = async (req,res)=>{
-
+export const ctrlSubscription = async (req, res) => {
   const { error } = schemes.subscriptionScheme.validate(req.body);
   if (error) {
     throw HttpError(400, error.message);
   }
-  const {subscription} = req.body;
-  const {_id}= req.user;
-  const result =await User.findByIdAndUpdate(_id,{subscription,});
-  console.log(subscription);
-  // const { contactId } = req.params;
-  // const result = await Contact.findByIdAndUpdate(contactId, req.body, {
-  //   new: true,
-  // });
+  const { subscription } = req.body;
+  const { _id } = req.user;
+  const result = await User.findByIdAndUpdate(_id, { subscription });
+
   if (!result) {
     throw HttpError(404, `User with id ${_id} not found:(`);
   }
   res.json(result);
-
-}
+};
