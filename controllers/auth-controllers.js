@@ -3,6 +3,14 @@ import { User, schemes } from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import gravatar from 'gravatar';
+import fs from 'fs/promises';
+import path from 'path'; 
+import * as url from 'url';
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+const avatarsDir= path.join(__dirname,"../","public","avatars");
 
 dotenv.config();
 
@@ -15,7 +23,8 @@ export const ctrlRegisterUser = async (req, res) => {
     throw HttpError(400, error.message);
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const result = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+  const result = await User.create({ ...req.body, password: hashPassword ,avatarURL});
   res.status(201).json({ name: result.name, email: result.email });
 };
 
@@ -60,4 +69,15 @@ export const ctrlSubscription = async (req, res) => {
     throw HttpError(404, `User with id ${_id} not found:(`);
   }
   res.json(result);
+};
+
+export const ctrlUpdateAvatar = async (req,res)=>{
+const {_id}= req.user;
+const {path:tempUpload,filename}=req.file;
+const avatarName= `${_id}_${filename}`;
+const resultUpload= path.join(avatarsDir,avatarName);
+await fs.rename(tempUpload,resultUpload);
+const avatarURL=path.join("avatars",avatarName);
+await User.findByIdAndUpdate(_id,{avatarURL});
+res.json({avatarURL});
 };
