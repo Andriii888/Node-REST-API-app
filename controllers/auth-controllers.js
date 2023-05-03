@@ -10,6 +10,9 @@ import * as url from 'url';
     const __filename = url.fileURLToPath(import.meta.url);
     const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
+import Jimp from 'jimp';
+
+
 const avatarsDir= path.join(__dirname,"../","public","avatars");
 
 dotenv.config();
@@ -74,6 +77,15 @@ export const ctrlSubscription = async (req, res) => {
 export const ctrlUpdateAvatar = async (req,res)=>{
 const {_id}= req.user;
 const {path:tempUpload,filename}=req.file;
+await Jimp.read(tempUpload).then((image) => {
+  image.resize(250, 250);
+  image.write(tempUpload);
+  
+})
+.catch((err) => {
+  console.log(err)
+});
+
 const avatarName= `${_id}_${filename}`;
 const resultUpload= path.join(avatarsDir,avatarName);
 await fs.rename(tempUpload,resultUpload);
