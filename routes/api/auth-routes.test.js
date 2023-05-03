@@ -23,10 +23,13 @@ describe("test /api/auth/login route",()=>{
     });
 
     test("test login route with correct data",async ()=>{
-        const registerData={email:"andr@gmail.com",password:"123456"};
-        const res = (await request(app).post("/api/auth/login")).send(registerData);
-        console.log(res)
+        const loginData={email:"andr@gmail.com",password:"123456"};
+        const res = (await request(app).post("/api/auth/login")).send(loginData);
+        console.log(res);
         expect(res.statusCode).toBe(200);
-        
+        expect(res.token);
+        expect(res.body.email).toBe(loginData.email);
+        expect(res.body.subscription).toBe('');
+
     })
 })
