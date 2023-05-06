@@ -3,21 +3,22 @@ import { User, schemes } from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import gravatar from 'gravatar';
-import fs from 'fs/promises';
-import path from 'path'; 
-import * as url from 'url';
-    const __filename = url.fileURLToPath(import.meta.url);
-    const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import gravatar from "gravatar";
+import fs from "fs/promises";
+import path from "path";
+import * as url from "url";
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
-import Jimp from 'jimp';
+import Jimp from "jimp";
+import { nanoid } from "nanoid";
+import { sendEmail } from "../helpers/sendEmail.js";
 
-
-const avatarsDir= path.join(__dirname,"../","public","avatars");
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 dotenv.config();
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, BASE_URL } = process.env;
 
 export const ctrlRegisterUser = async (req, res) => {
   const { email, password } = req.body;
@@ -27,7 +28,25 @@ export const ctrlRegisterUser = async (req, res) => {
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
-  const result = await User.create({ ...req.body, password: hashPassword ,avatarURL});
+
+  const verificationToken = nanoid();
+  console.log(verificationToken);
+  console.log(email)
+
+  const result = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+    verificationToken,
+  });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a targer="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}"`,
+  };
+  await sendEmail(verifyEmail);
+
   res.status(201).json({ name: result.name, email: result.email });
 };
 
@@ -35,7 +54,10 @@ export const ctrlLoginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    throw HttpError(401, "email or password wrong");
+    throw HttpError(401, "Email or Password wrong");
+  }
+  if (!user.verify) {
+    throw HttpError(401, "Email not verify");
   }
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
@@ -74,22 +96,32 @@ export const ctrlSubscription = async (req, res) => {
   res.json(result);
 };
 
-export const ctrlUpdateAvatar = async (req,res)=>{
-const {_id}= req.user;
-const {path:tempUpload,filename}=req.file;
-await Jimp.read(tempUpload).then((image) => {
-  image.resize(250, 250);
-  image.write(tempUpload);
-  
-})
-.catch((err) => {
-  console.log(err)
-});
+export const ctrlUpdateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, filename } = req.file;
+  await Jimp.read(tempUpload)
+    .then((image) => {
+      image.resize(250, 250);
+      image.write(tempUpload);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
-const avatarName= `${_id}_${filename}`;
-const resultUpload= path.join(avatarsDir,avatarName);
-await fs.rename(tempUpload,resultUpload);
-const avatarURL=path.join("avatars",avatarName);
-await User.findByIdAndUpdate(_id,{avatarURL});
-res.json({avatarURL});
+  const avatarName = `${_id}_${filename}`;
+  const resultUpload = path.join(avatarsDir, avatarName);
+  await fs.rename(tempUpload, resultUpload);
+  const avatarURL = path.join("avatars", avatarName);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({ avatarURL });
+};
+
+export const ctrlEmailVerify = async (req,res)=>{
+const {verificationToken}=req.params;
+const user = await User.findOne({verificationToken});
+if(!user){
+  throw HttpError(404, "User not found");
+}
+await User.findByIdAndUpdate(user._id,{verify:true,verificationToken:""});
+res.json({message:"Verification successful"})
 };
