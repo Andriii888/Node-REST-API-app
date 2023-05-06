@@ -31,7 +31,7 @@ export const ctrlRegisterUser = async (req, res) => {
 
   const verificationToken = nanoid();
   console.log(verificationToken);
-  console.log(email)
+  console.log(email);
 
   const result = await User.create({
     ...req.body,
@@ -43,7 +43,7 @@ export const ctrlRegisterUser = async (req, res) => {
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a targer="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}"`,
+    html: `<a targer="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click me to verify email</a>`,
   };
   await sendEmail(verifyEmail);
 
@@ -116,12 +116,38 @@ export const ctrlUpdateAvatar = async (req, res) => {
   res.json({ avatarURL });
 };
 
-export const ctrlEmailVerify = async (req,res)=>{
-const {verificationToken}=req.params;
-const user = await User.findOne({verificationToken});
-if(!user){
-  throw HttpError(404, "User not found");
-}
-await User.findByIdAndUpdate(user._id,{verify:true,verificationToken:""});
-res.json({message:"Verification successful"})
+export const ctrlEmailVerify = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: "",
+  });
+  res.json({ message: "Verification successful" });
+};
+
+export const ctrlResendVerifyEmail = async (req, res) => {
+  const { error } = schemes.emailVerifyScheme.validate(req.body);
+  if (error) {
+    throw HttpError(400, error.message);
+  }
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw HttpError(400, "User not found");
+  }
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a targer="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click me to verify email</a>`,
+  };
+  await sendEmail(verifyEmail);
+
+  res.status(200).json({ message: "Verification email sent" });
 };

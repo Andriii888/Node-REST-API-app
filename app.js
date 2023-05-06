@@ -2,8 +2,7 @@ import express from "express";
 import logger from "morgan";
 import cors from "cors";
 import contactRouter from "./routes/api/contacts-routes.js";
-import authRouter from './routes/api/auth-routes.js';
-
+import authRouter from "./routes/api/auth-routes.js";
 
 const app = express();
 
@@ -14,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-app.use("/api/users",authRouter);
+app.use("/api/users", authRouter);
 app.use("/api/contacts", contactRouter);
 
 app.use((req, res) => {
